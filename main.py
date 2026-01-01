@@ -51,7 +51,7 @@ class agent:
         return self.qtable[i][j].index(max_probability)
 
     
-    def q_learning(self, num_episodes: int, alpha: float, discount_rate: float, min_epsilon: float, total_moves: int):
+    def q_learning(self, num_episodes: int, alpha: float, discount_rate: float, min_epsilon: float, max_moves: int):
         """
         Docstring for q_learning
         
@@ -69,7 +69,7 @@ class agent:
             state = (0,0)
             epsilon = 1 - (_/num_episodes)*(1-min_epsilon)
 
-            for __ in range(total_moves):
+            for __ in range(max_moves):
                 # choose action a
                 a = self.choose_random_move() if random.random() < epsilon else self.choose_optimal_move(state)
                 r, new_state, alive = self.env.take_action(a)
@@ -88,19 +88,37 @@ class agent:
             print(mouse.qtable)
             self.env.reset()
 
-    def play_episode(self):
-        i = 0
-        j = 1
-        print("="*5)
-        print("|" + "m" if i == 0 and j == 0 else " " + "m" if i == 0 and j == 1 else " " + "m" if i == 0 and j == 2 else " " + "|")
-        print("|" + "m" if i == 1 and j == 0 else " " + "m" if i == 1 and j == 1 else " " + "m" if i == 1 and j == 2 else " " + "|")
-        print("="*5)
+    def play_episode(self, max_moves: int):
+        def print_game(state):
+            i, j = state
+            print("="*7)
+            print("|" + ("m" if i == 0 and j == 0 else " ") + "|" + ("m" if i == 0 and j == 1 else " ") + "|" + ("m" if i == 0 and j == 2 else " ") + "|")
+            print("-"*7)
+            print("|" + ("m" if i == 1 and j == 0 else " ") + "|" + ("m" if i == 1 and j == 1 else " ") + "|" + ("m" if i == 1 and j == 2 else " ") + "|")
+            print("="*7)
+
+        state = (0,0)
+        print("INITIAL")
+        print_game(state)
+        print()
+        for move in range(max_moves):
+            r, new_state, alive = self.env.take_action(self.choose_optimal_move(state))
+
+            if not alive:
+                print("EPISODE TERMINATED")
+                break
+
+            print(f"Move: {move + 1}")
+            print_game(new_state)
+            state = new_state
+
+        self.env.reset()
 
 
 env = Environment()
 mouse = agent(env)
-# mouse.q_learning(50, 0.1, 0.95, 0.03, 10)
-mouse.play_episode()
+mouse.q_learning(200, 0.1, 0.95, 0.03, 10)
+mouse.play_episode(20)
 
 
 
