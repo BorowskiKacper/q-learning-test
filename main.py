@@ -29,7 +29,7 @@ class Environment:
         c = j + self.actions[action][1]
         if r < 0 or r >= len(self.board) or c < 0 or c >= len(self.board[0]):    # out of bounds
             self.state = (i, j)
-            return (self.board[i][j], (i, j), True)
+            return (-5, (i, j), True)
         elif self.board[r][c] not in [-1, 1]:
             self.state = (r, c)
             return (self.board[r][c], (r, c), False)
@@ -88,7 +88,7 @@ class agent:
             print(mouse.qtable)
             self.env.reset()
 
-    def play_episode(self, max_moves: int):
+    def play_episode(self, max_moves: int) -> bool:
         def print_game(state):
             i, j = state
             print("="*7)
@@ -106,19 +106,33 @@ class agent:
 
             if not alive:
                 print("EPISODE TERMINATED")
-                break
+                print_game(new_state)
+                self.env.reset()
+                if new_state[0] == 1 and new_state[1] == 2:
+                    return True
+                else:
+                    return False
 
             print(f"Move: {move + 1}")
             print_game(new_state)
             state = new_state
 
         self.env.reset()
+        return False
 
 
 env = Environment()
-mouse = agent(env)
-mouse.q_learning(200, 0.1, 0.95, 0.03, 10)
-mouse.play_episode(20)
+
+
+wins = 0
+games = 500
+for i in range(games):
+    mouse = agent(env)
+    mouse.q_learning(30, 0.1, 0.95, 0.03, 10)
+    if mouse.play_episode(20):
+        wins += 1
+
+print(f"win/loss ratio: {wins/games} | wins: {wins}")
 
 
 
